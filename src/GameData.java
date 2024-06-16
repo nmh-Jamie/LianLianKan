@@ -16,8 +16,8 @@ public class GameData {
 	int[][] board; // 0为通路，1为墙，2及以上为方块
 	int[][] board0;
 	int havekilled;
-	int[] kills;
-	boolean[] together;
+	volatile int[] kills;
+	volatile boolean[] together;
 	final static int[] dx = { 1, 0, -1, 0 }, dy = { 0, 1, 0, -1 };
 
 	GameData(int W, int H, int N) {
@@ -103,7 +103,7 @@ public class GameData {
 		return havekilled == W * H;
 	}
 
-	void kill(int x, int y, boolean f) {
+	synchronized void kill(int x, int y, boolean f) {
 		board[x + 2][y + 2] = 0;
 		kills[havekilled] = x + y * W;
 		together[havekilled] = f;
@@ -115,7 +115,7 @@ public class GameData {
 		kill(x, y, false);
 	}
 
-	Node kill(int x1, int y1, int x2, int y2) {
+	synchronized Node kill(int x1, int y1, int x2, int y2) {
 		if (getColor(x1, y1) != getColor(x2, y2))
 			return null;
 		else {
@@ -168,16 +168,16 @@ public class GameData {
 		}
 	}
 
-	void recover() {
+	synchronized void recover() {
 		havekilled--;
 		int i = kills[havekilled];
-		board[i % W][i / W] = board0[i % W][i / W];
+		board[i % W + 2][i / W + 2] = board0[i % W + 2][i / W + 2];
 	}
 
-	void rekill() {
+	synchronized void rekill() {
 		int i = kills[havekilled];
 		havekilled++;
-		board[i % W][i / W] = 0;
+		board[i % W + 2][i / W + 2] = 0;
 	}
 }
 

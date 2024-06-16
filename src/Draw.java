@@ -25,7 +25,7 @@ class Draw extends JPanel {
 		}
 	}
 
-	void paint() {
+	synchronized void paint() {
 		int i = 0;
 		for (Segment s : ss) {
 			System.out.println(s.x1 + " " + s.y1 + " " + s.x2 + " " + s.y2);
@@ -49,7 +49,9 @@ class Draw extends JPanel {
 			l.setVisible(false);
 	}
 
-	void draw(Node n) {
+	synchronized void draw(Node n) {
+		if (n == null)
+			return;
 		while (n.pre != null) {
 			// System.err.println("(" + n.x + "," + n.y + ")");
 			int x11 = n.x - 2;

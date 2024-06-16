@@ -100,16 +100,18 @@ public class Game extends Frame {
 			@Override
 			public void stateChanged(ChangeEvent e) {
 				if (!playing) {
+					playing = true;
 					if (s.getValue() < g.g.havekilled)
 						backward();
 					else if (s.getValue() > g.g.havekilled)
 						forward();
+					playing = false;
 				}
-				try {
-					Thread.sleep(15);
-				} catch (InterruptedException e1) {
-					e1.printStackTrace();
-				}
+//				try {
+//					Thread.sleep(15);
+//				} catch (InterruptedException e1) {
+//					e1.printStackTrace();
+//				}
 			}
 		});
 
@@ -167,6 +169,7 @@ public class Game extends Frame {
 	synchronized void forward() {
 		System.out.println("forward");
 		int k = g.g.kills[g.g.havekilled];
+		System.out.println("(" + (k % W) + "," + (k / W) + ")");
 		boolean t = g.g.together[g.g.havekilled];
 		if (t) {
 			int x2 = g.g.kills[g.g.havekilled + 1] % W;
@@ -259,11 +262,11 @@ public class Game extends Frame {
 					else if (s.getValue() > g.g.havekilled)
 						forward();
 				}
-				try {
-					Thread.sleep(15);
-				} catch (InterruptedException e1) {
-					e1.printStackTrace();
-				}
+//				try {
+//					Thread.sleep(15);
+//				} catch (InterruptedException e1) {
+//					e1.printStackTrace();
+//				}
 			}
 		});
 
