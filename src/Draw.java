@@ -14,7 +14,7 @@ class Draw extends JPanel {
 	ArrayList<Segment> ss;
 	Label[] ls;
 	int x0, y0;
-	Color c;
+	timeToClear t;
 
 	Draw(int x0, int y0, int ma) {
 		setOpaque(false);
@@ -56,6 +56,8 @@ class Draw extends JPanel {
 	void draw(Node n) {
 		if (n == null)
 			return;
+		if (t != null && t.isAlive())
+			t.interrupt();
 		synchronized (this) {
 			while (n.pre != null) {
 				int x11 = n.x - 2;
@@ -66,7 +68,8 @@ class Draw extends JPanel {
 				add(x11, y11, x2, y2);
 			}
 			paint();
-			new timeToClear(this).start();
+			t = new timeToClear(this);
+			t.start();
 		}
 	}
 }
@@ -93,7 +96,7 @@ class timeToClear extends Thread {
 	public void run() {
 		synchronized (d) {
 			try {
-				Thread.sleep(10);
+				Thread.sleep(100);
 			} catch (InterruptedException e) {
 			}
 

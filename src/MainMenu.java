@@ -96,7 +96,7 @@ public class MainMenu extends Frame {
 	}
 
 	void loadLocal() {
-		System.out.println("load");
+		System.out.println("load...");
 		FileDialog f = new FileDialog(this, "∂¡»°¥Êµµ", FileDialog.LOAD);
 		f.setFilenameFilter(new FilenameFilter() {
 			@Override
@@ -114,7 +114,7 @@ public class MainMenu extends Frame {
 				new Game((DataStorage) input.readObject());
 				input.close();
 			} catch (Exception e) {
-				e.printStackTrace();
+				System.out.println("µº»Î ß∞‹£°");
 			}
 
 		}

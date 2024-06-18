@@ -1,3 +1,4 @@
+
 /**
  * 单局游戏
  */
@@ -133,32 +134,6 @@ public class Game extends Frame {
 		repaint();
 	}
 
-	private void saveLocal() {
-		System.out.println("save");
-		FileDialog f = new FileDialog(this, "保存存档", FileDialog.SAVE);
-		f.setFile("Untitled.llk");
-		f.setFilenameFilter(new FilenameFilter() {
-			@Override
-			public boolean accept(File dir, String name) {
-				return name.endsWith(".llk") || new File(dir, name).isDirectory();
-			}
-		});
-		f.setVisible(true);
-		String path = f.getFile();
-		if (path != null) {
-			path = f.getDirectory() + path;
-			System.out.println(path);
-			try {
-				ObjectOutputStream output = new ObjectOutputStream(new FileOutputStream(path));
-				output.writeObject(new DataStorage(g.g, t.now, isTime, isFake));
-				output.close();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-
-		}
-	}
-
 	synchronized void backward() {
 		System.out.println("[backward]");
 		g.g.recover();
@@ -189,5 +164,31 @@ public class Game extends Frame {
 			g.bs[k % W][k / W].setVisible(false);
 		}
 		s.setValue(g.g.havekilled);
+	}
+
+	private void saveLocal() {
+		System.out.println("save");
+		FileDialog f = new FileDialog(this, "保存存档", FileDialog.SAVE);
+		f.setFile("Untitled.llk");
+		f.setFilenameFilter(new FilenameFilter() {
+			@Override
+			public boolean accept(File dir, String name) {
+				return name.endsWith(".llk") || new File(dir, name).isDirectory();
+			}
+		});
+		f.setVisible(true);
+		String path = f.getFile();
+		if (path != null) {
+			path = f.getDirectory() + path;
+			System.out.println(path);
+			try {
+				ObjectOutputStream output = new ObjectOutputStream(new FileOutputStream(path));
+				output.writeObject(new DataStorage(g.g, t.now, isTime, isFake));
+				output.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+		}
 	}
 }
