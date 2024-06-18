@@ -1,16 +1,11 @@
-import java.awt.Button;
-import java.awt.Checkbox;
-import java.awt.Color;
-import java.awt.Dialog;
-import java.awt.Dimension;
-import java.awt.Image;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.io.File;
-import java.io.IOException;
+
+/**
+ * 方块区域
+ */
+
+import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
@@ -20,7 +15,7 @@ import javax.swing.JPanel;
 class GameBoard extends JPanel {
 	private static final long serialVersionUID = 1L;
 	final static Color[] colors = { null, null, Color.RED, Color.YELLOW, Color.BLUE, Color.GREEN, Color.ORANGE,
-			Color.PINK, Color.GRAY, Color.CYAN, Color.BLACK, Color.DARK_GRAY };
+			Color.PINK, Color.GRAY, Color.CYAN, Color.BLACK, Color.LIGHT_GRAY, Color.MAGENTA, Color.DARK_GRAY };
 	Game G;
 	GameData g;
 	Cell[][] bs;
@@ -29,33 +24,22 @@ class GameBoard extends JPanel {
 
 	GameBoard(int W, int H, int N, Game G) {
 		setSize(W * 40, H * 40);
-		setOpaque(false);
 		g = new GameData(W, H, N);
 		this.G = G;
-		int L = 40;
-		int x0 = 0, y0 = getHeight() - L;
-		setLayout(null);
-		bs = new Cell[g.W][];
-		for (int i = 0; i < g.W; ++i) {
-			bs[i] = new Cell[g.H];
-			for (int j = 0; j < g.H; ++j) {
-				bs[i][j] = new Cell(i, j, this);
-				bs[i][j].setBackground(colors[g.getColor(i, j)]);
-				bs[i][j].setSize(L, L);
-				bs[i][j].setLocation(x0 + L * i, y0 - L * j);
-				add(bs[i][j]);
-			}
-		}
+		setOthers();
 	}
 
 	GameBoard(DataStorage d, Game G) {
 		setSize(d.W * 40, d.H * 40);
-		setOpaque(false);
 		g = new GameData(d);
 		this.G = G;
-		int L = 40;
-		int x0 = 0, y0 = getHeight() - L;
+		setOthers();
+	}
+
+	private void setOthers() {
 		setLayout(null);
+		setOpaque(false);
+		int L = 40, x0 = 0, y0 = getHeight() - L;
 		bs = new Cell[g.W][];
 		for (int i = 0; i < g.W; ++i) {
 			bs[i] = new Cell[g.H];
@@ -86,6 +70,7 @@ class Cell extends Button implements ActionListener {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		g.G.t.start();
 		if (g.G.fake1 != null && g.G.fake1.getState()) {
 			setVisible(false);
 			g.g.kill(x, y);
@@ -94,13 +79,12 @@ class Cell extends Button implements ActionListener {
 			int x1 = g.now % g.g.W, y1 = g.now / g.g.W;
 			Node n = g.g.kill(x1, y1, x, y);
 			if (n != null) {
-				// System.out.println("(" + n.x + "," + n.y + ")");
 				g.G.c.draw(n);
 				g.bs[x1][y1].setVisible(false);
 				g.bs[x][y].setVisible(false);
 				g.now = -1;
 			} else {
-				System.out.println("error");
+				System.out.println("cannot kill");
 				g.now = x + y * g.g.W;
 				return;
 			}
@@ -111,12 +95,11 @@ class Cell extends Button implements ActionListener {
 		g.G.playing = true;
 		g.G.s.setMaximum(g.g.havekilled);
 		g.G.s.setValue(g.g.havekilled);
-		System.out.println("now: " + g.now);
 		g.G.playing = false;
 
 		if (g.g.isComplete()) {
-			System.out.println("**** WIN ****");
-			g.G.thd.interrupt();
+			System.out.println("***** WIN *****");
+			g.G.t.stop();
 			Dialog d = new Dialog(g.G, "你过关！");
 			d.setResizable(false);
 			d.addWindowListener(new WindowAdapter() {

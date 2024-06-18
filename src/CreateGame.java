@@ -46,7 +46,7 @@ public class CreateGame extends Frame {
 		l1.setLocation((getWidth() - l1.getWidth()) / 2, (int) (getHeight() * 0.1));
 		add(l1);
 
-		i1 = new SingleInput("横向方块数", "16", 100);
+		i1 = new SingleInput("横向方块数", "18", 100);
 		i1.setSize(getWidth(), (int) (getHeight() * 0.1));
 		i1.setLocation((getWidth() - i1.getWidth()) / 2, (int) (getHeight() * 0.25));
 		add(i1);
@@ -56,7 +56,7 @@ public class CreateGame extends Frame {
 		i2.setLocation((getWidth() - i2.getWidth()) / 2, (int) (getHeight() * 0.35));
 		add(i2);
 
-		i3 = new SingleInput("方块种类数", "10", 10);
+		i3 = new SingleInput("方块种类数", "12", 12);
 		i3.setSize(getWidth(), (int) (getHeight() * 0.1));
 		i3.setLocation((getWidth() - i3.getWidth()) / 2, (int) (getHeight() * 0.45));
 		add(i3);
@@ -87,6 +87,11 @@ public class CreateGame extends Frame {
 				int N = i3.getInput();
 				boolean isTime = c1.getState();
 				boolean isFake = c2.getState();
+				if (W * H % 2 != 0) {
+					i1.l.setForeground(Color.RED);
+					i2.l.setForeground(Color.RED);
+					return;
+				}
 				if (W == -1 || H == -1 || N == -1)
 					return;
 				System.err.println("Game: " + W + " " + H + " " + N + " " + isTime + " " + isFake);

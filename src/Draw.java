@@ -1,3 +1,8 @@
+
+/**
+ * 方块连线
+ */
+
 import java.awt.Color;
 import java.awt.Label;
 import java.util.ArrayList;
@@ -28,7 +33,6 @@ class Draw extends JPanel {
 	synchronized void paint() {
 		int i = 0;
 		for (Segment s : ss) {
-			System.out.println(s.x1 + " " + s.y1 + " " + s.x2 + " " + s.y2);
 			Label l = ls[i++];
 			if (s.x1 == s.x2)
 				l.setSize(4, 44);
@@ -39,36 +43,31 @@ class Draw extends JPanel {
 		}
 	}
 
-	void add(int x1, int y1, int x2, int y2) {
+	synchronized void add(int x1, int y1, int x2, int y2) {
 		ss.add(new Segment(x0 + 40 * x1, y0 - 40 * y1, x0 + 40 * x2, y0 - 40 * y2));
 	}
 
-	void clear() {
+	synchronized void clear() {
 		ss.clear();
 		for (Label l : ls)
 			l.setVisible(false);
 	}
 
-	synchronized void draw(Node n) {
+	void draw(Node n) {
 		if (n == null)
 			return;
-		while (n.pre != null) {
-			// System.err.println("(" + n.x + "," + n.y + ")");
-			int x11 = n.x - 2;
-			int y11 = n.y - 2;
-			n = n.pre;
-			int x2 = n.x - 2;
-			int y2 = n.y - 2;
-			add(x11, y11, x2, y2);
+		synchronized (this) {
+			while (n.pre != null) {
+				int x11 = n.x - 2;
+				int y11 = n.y - 2;
+				n = n.pre;
+				int x2 = n.x - 2;
+				int y2 = n.y - 2;
+				add(x11, y11, x2, y2);
+			}
+			paint();
+			new timeToClear(this).start();
 		}
-		paint();
-		try {
-			Thread.sleep(10);
-		} catch (InterruptedException e1) {
-			// TODO 自动生成的 catch 块
-			e1.printStackTrace();
-		}
-		clear();
 	}
 }
 
@@ -80,5 +79,25 @@ class Segment {
 		this.y1 = y1;
 		this.x2 = x2;
 		this.y2 = y2;
+	}
+}
+
+class timeToClear extends Thread {
+	Draw d;
+
+	timeToClear(Draw d) {
+		this.d = d;
+	}
+
+	@Override
+	public void run() {
+		synchronized (d) {
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+			}
+
+			d.clear();
+		}
 	}
 }

@@ -8,10 +8,9 @@ import java.util.Queue;
 import java.util.Random;
 
 /**
- * 盘面
+ * 盘面数据
  */
 public class GameData {
-
 	int W, H, N;
 	int[][] board; // 0为通路，1为墙，2及以上为方块
 	int[][] board0;
@@ -49,6 +48,9 @@ public class GameData {
 			for (int i = 0; i < W * H; ++i) {
 				L[i] = i % N + 2;
 			}
+			for (int i = W * H / N * N, j = 0; i < W * H; ++i, ++j) {
+				L[i] = j / 2 + 2;
+			}
 			for (int i = W * H - 1; i >= 0; --i) {
 				int idx = r.nextInt(i + 1);
 				board[i / H + 2][i % H + 2] = L[idx];
@@ -60,12 +62,7 @@ public class GameData {
 				board0[i][j] = board[i][j];
 			}
 		}
-		for (int y = H + 3; y >= 0; --y) {
-			for (int x = 0; x <= W + 3; ++x) {
-				System.err.print(board[x][y] + " ");
-			}
-			System.err.println();
-		}
+		showBoard();
 	}
 
 	GameData(DataStorage d) {
@@ -89,6 +86,20 @@ public class GameData {
 				board0[i][j] = d.board0.get(i).get(j);
 			}
 		}
+		showBoard();
+	}
+
+	void show() {
+		System.out.println("last: " + (W * H - havekilled));
+	}
+
+	void showBoard() {
+		for (int y = H + 3; y >= 0; --y) {
+			for (int x = 0; x <= W + 3; ++x) {
+				System.err.printf("%4d", board[x][y]);
+			}
+			System.err.println();
+		}
 	}
 
 	int getColor(int x, int y) {
@@ -108,7 +119,7 @@ public class GameData {
 		kills[havekilled] = x + y * W;
 		together[havekilled] = f;
 		havekilled++;
-		System.out.println("last: " + (W * H - havekilled));
+		show();
 	}
 
 	void kill(int x, int y) {
@@ -119,8 +130,6 @@ public class GameData {
 		if (getColor(x1, y1) != getColor(x2, y2))
 			return null;
 		else {
-//			kill(x1, y1, true);
-//			kill(x2, y2, true);
 			x1 += 2;
 			y1 += 2;
 			x2 += 2;
@@ -172,12 +181,14 @@ public class GameData {
 		havekilled--;
 		int i = kills[havekilled];
 		board[i % W + 2][i / W + 2] = board0[i % W + 2][i / W + 2];
+		show();
 	}
 
 	synchronized void rekill() {
 		int i = kills[havekilled];
 		havekilled++;
 		board[i % W + 2][i / W + 2] = 0;
+		show();
 	}
 }
 

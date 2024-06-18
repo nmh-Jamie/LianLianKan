@@ -1,4 +1,3 @@
-
 /**
  * 单局游戏
  */
@@ -19,7 +18,6 @@ public class Game extends Frame {
 	GameBoard g;
 	int W, H, N;
 	boolean isTime, isFake;
-	Thread thd;
 	JSlider s;
 	Checkbox fake1;
 	Timer t;
@@ -33,6 +31,37 @@ public class Game extends Frame {
 		this.N = N;
 		this.isTime = isTime;
 		this.isFake = isFake;
+
+		setLayout(null);
+		t = new Timer("00:00:00", Label.CENTER, isTime);
+		g = new GameBoard(W, H, N, this);
+		s = new JSlider(0, 0);
+		setOthers();
+
+		setVisible(true);
+	}
+
+	Game(DataStorage d) { // 导入存档
+		super("游戏存档（最后于 " + d.date + "）");
+		W = d.W;
+		H = d.H;
+		N = d.N;
+		isTime = d.isTime;
+		isFake = d.isFake;
+
+		setLayout(null);
+		t = new Timer("00:00:00", Label.CENTER, isTime);
+		t.now = d.duration;
+		t.refresh();
+		g = new GameBoard(d, this);
+		s = new JSlider(0, d.havekilled);
+		s.setValue(d.havekilled);
+		setOthers();
+
+		setVisible(true);
+	}
+
+	private void setOthers() {
 		setSize(40 * (W + 6), 40 * (H + 5));
 		setResizable(false);
 		{ // 位置居中
@@ -44,41 +73,15 @@ public class Game extends Frame {
 		}
 		addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
-				if (thd != null)
-					thd.interrupt();
+				t.stop();
 				dispose();
 			}
 		});
-		setItem();
-		setVisible(true);
-	}
 
-	void setItem() {
-		setLayout(null);
+		t.setSize(getWidth(), 20);
+		t.setLocation(0, 60);
+		add(t);
 
-		MenuBar m = new MenuBar();
-		Menu m1 = new Menu("保存");
-		setMenuBar(m);
-		m.add(m1);
-		MenuItem m11 = new MenuItem("保存到本地");
-		m11.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveLocal();
-			}
-		});
-		m1.add(m11);
-
-		if (isTime) {
-			t = new Timer("00:00:00", Label.CENTER);
-			t.setSize(getWidth(), 20);
-			t.setLocation(0, 60);
-			add(t);
-			thd = new Thread(t);
-			thd.start();
-		}
-
-		g = new GameBoard(W, H, N, this);
 		g.setLocation((getWidth() - g.getWidth()) / 2, 100);
 		add(g);
 
@@ -90,35 +93,39 @@ public class Game extends Frame {
 			add(fake1);
 		}
 
-		s = new JSlider(0, 0);
 		s.setSize(getWidth() * 8 / 10, 20);
 		s.setBackground(Color.WHITE);
 		s.setLocation(getWidth() / 10, 160 + 40 * H);
 		add(s);
-
 		s.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent e) {
 				if (!playing) {
-					playing = true;
 					if (s.getValue() < g.g.havekilled)
 						backward();
 					else if (s.getValue() > g.g.havekilled)
 						forward();
-					playing = false;
 				}
-//				try {
-//					Thread.sleep(15);
-//				} catch (InterruptedException e1) {
-//					e1.printStackTrace();
-//				}
 			}
 		});
 
 		c = new Draw(g.getX() + 20, g.getY() + 40 * H - 20, 2 * (W + 2) + 2 * (H + 2));
 		c.setSize(getSize());
 		add(c);
-		System.err.println("create OK");
+
+		MenuBar m = new MenuBar();
+		Menu m1 = new Menu("保存");
+		setMenuBar(m);
+		m.add(m1);
+		MenuItem m11 = new MenuItem("保存到本地");
+		m11.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				t.stop();
+				saveLocal();
+			}
+		});
+		m1.add(m11);
 
 		setComponentZOrder(g, getComponentCount() - 2);
 		setComponentZOrder(c, getComponentCount() - 1);
@@ -126,7 +133,7 @@ public class Game extends Frame {
 		repaint();
 	}
 
-	void saveLocal() {
+	private void saveLocal() {
 		System.out.println("save");
 		FileDialog f = new FileDialog(this, "保存存档", FileDialog.SAVE);
 		f.setFile("Untitled.llk");
@@ -153,7 +160,7 @@ public class Game extends Frame {
 	}
 
 	synchronized void backward() {
-		System.out.println("backward");
+		System.out.println("[backward]");
 		g.g.recover();
 		int k = g.g.kills[g.g.havekilled];
 		boolean t = g.g.together[g.g.havekilled];
@@ -167,9 +174,8 @@ public class Game extends Frame {
 	}
 
 	synchronized void forward() {
-		System.out.println("forward");
+		System.out.println("[forward]");
 		int k = g.g.kills[g.g.havekilled];
-		System.out.println("(" + (k % W) + "," + (k / W) + ")");
 		boolean t = g.g.together[g.g.havekilled];
 		if (t) {
 			int x2 = g.g.kills[g.g.havekilled + 1] % W;
@@ -183,103 +189,5 @@ public class Game extends Frame {
 			g.bs[k % W][k / W].setVisible(false);
 		}
 		s.setValue(g.g.havekilled);
-	}
-
-	Game(DataStorage d) { // 导入存档
-		super("游戏存档（最后于 " + d.date + "）");
-		W = d.W;
-		H = d.H;
-		N = d.N;
-		isTime = d.isTime;
-		isFake = d.isFake;
-		setSize(40 * (W + 6), 40 * (H + 5));
-		setResizable(false);
-		{ // 位置居中
-			Toolkit toolkit = Toolkit.getDefaultToolkit();
-			Dimension screenSize = toolkit.getScreenSize();
-			int x = (screenSize.width - getWidth()) / 2;
-			int y = (screenSize.height - getHeight()) / 2;
-			setLocation(x, y);
-		}
-		addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent e) {
-				if (thd != null)
-					thd.interrupt();
-				dispose();
-			}
-		});
-
-		setLayout(null);
-
-		MenuBar m = new MenuBar();
-		Menu m1 = new Menu("保存");
-		setMenuBar(m);
-		m.add(m1);
-		MenuItem m11 = new MenuItem("保存到本地");
-		m11.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveLocal();
-			}
-		});
-		m1.add(m11);
-
-		if (isTime) {
-			t = new Timer("00:00:00", Label.CENTER);
-			t.now = d.duration;
-			t.setSize(getWidth(), 20);
-			t.setLocation(0, 60);
-			add(t);
-			thd = new Thread(t);
-			thd.start();
-		}
-
-		g = new GameBoard(d, this);
-		g.setLocation((getWidth() - g.getWidth()) / 2, 100);
-		add(g);
-
-		if (isFake) {
-			fake1 = new Checkbox("强制消除");
-			fake1.setFont(new Font("宋体", Font.PLAIN, 20));
-			fake1.setSize(getWidth() / 3, 20);
-			fake1.setLocation((getWidth() - 100) / 2, 130 + 40 * H);
-			add(fake1);
-		}
-
-		s = new JSlider(0, d.havekilled);
-		s.setValue(d.havekilled);
-		s.setSize(getWidth() * 8 / 10, 20);
-		s.setBackground(Color.WHITE);
-		s.setLocation(getWidth() / 10, 160 + 40 * H);
-		add(s);
-
-		s.addChangeListener(new ChangeListener() {
-			@Override
-			public void stateChanged(ChangeEvent e) {
-				if (!playing) {
-					if (s.getValue() < g.g.havekilled)
-						backward();
-					else if (s.getValue() > g.g.havekilled)
-						forward();
-				}
-//				try {
-//					Thread.sleep(15);
-//				} catch (InterruptedException e1) {
-//					e1.printStackTrace();
-//				}
-			}
-		});
-
-		c = new Draw(g.getX() + 20, g.getY() + 40 * H - 20, 2 * (W + 2) + 2 * (H + 2));
-		c.setSize(getSize());
-		add(c);
-		System.err.println("load OK");
-
-		setComponentZOrder(g, getComponentCount() - 2);
-		setComponentZOrder(c, getComponentCount() - 1);
-		revalidate();
-		repaint();
-
-		setVisible(true);
 	}
 }
