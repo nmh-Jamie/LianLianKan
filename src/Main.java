@@ -13,5 +13,6 @@ public class Main {
 		new MainMenu();
 		// new CreateGame();
 		// new GameData(10,10,5);
+		//nmz
 	}
 }
