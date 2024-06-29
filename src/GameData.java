@@ -48,7 +48,7 @@ public class GameData {
 			for (int i = 0; i < W * H; ++i) {
 				L[i] = i % N + 2;
 			}
-			for (int i = W * H / (2 * N) * 2 * N, j = 0; i < W * H; ++i, ++j) {
+			for (int i = W * H / N * N, j = 0; i < W * H; ++i, ++j) {
 				L[i] = j / 2 + 2;
 			}
 			for (int i = W * H - 1; i >= 0; --i) {
