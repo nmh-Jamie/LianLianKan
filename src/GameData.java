@@ -136,17 +136,20 @@ public class GameData {
 			y2 += 2;
 
 			// BFS
-			boolean[][][] vis;
-			vis = new boolean[W + 4][][];
+			boolean[][][][] vis;
+			vis = new boolean[W + 4][][][];
 			for (int i = 0; i < W + 4; ++i) {
-				vis[i] = new boolean[H + 4][];
+				vis[i] = new boolean[H + 4][][];
 				for (int j = 0; j < H + 4; ++j) {
-					vis[i][j] = new boolean[4];
+					vis[i][j] = new boolean[4][];
+					for (int k = 0; k < 4; ++k) {
+						vis[i][j][k] = new boolean[3];
+					}
 				}
 			}
 			Queue<Node> q = new LinkedList<>();
 			q.add(new Node(x1, y1, -1, 0));
-			vis[x1][y1][0] = vis[x1][y1][1] = vis[x1][y1][2] = vis[x1][y1][3] = true;
+			vis[x1][y1][0][0] = vis[x1][y1][1][0] = vis[x1][y1][2][0] = vis[x1][y1][3][0] = true;
 
 			Node re;
 			while (!q.isEmpty()) {
@@ -161,9 +164,9 @@ public class GameData {
 						t = now.t;
 					else
 						t = now.t + 1;
-					if (t > 2 || vis[x][y][i])
+					if (t > 2 || vis[x][y][i][t])
 						continue;
-					vis[x][y][i] = true;
+					vis[x][y][i][t] = true;
 					re = new Node(x, y, i, t, now);
 					q.add(re);
 					if (x == x2 && y == y2) {
